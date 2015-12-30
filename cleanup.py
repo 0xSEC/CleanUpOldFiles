@@ -35,9 +35,9 @@ def delete_path_check(path):
     list_check = str(raw_input(prompt)).upper().strip()
     if list_check == 'Y':
         return True
-    print ("%s has not been removed. "
-           "Please run the command again if you want to "
-           "remove the file path." % path)
+    print("%s has not been removed. "
+          "Please run the command again if you want to "
+          "remove the file path." % path)
 
 
 def all_files_old(paths, comparison_date):
@@ -53,7 +53,7 @@ def delete_files(paths, force=False):
     """
     for path in paths:
         if force is True or delete_path_check(path):
-            print "Deleting:", path
+            print("Deleting:", path)
             os.remove(path)
 
 
@@ -62,7 +62,7 @@ def delete_dir(dir_, force=False):
     Deletes 'dir_' when 'force' returns True.
     """
     if force is True or delete_path_check(dir_):
-        print "Deleting:", dir_
+        print("Deleting:", dir_)
         os.rmdir(dir_)
 
 
@@ -82,7 +82,7 @@ def clean_up_files(path, comparison_date, force=False):
     for dirpath, subdirs, filenames in os.walk(path, topdown=False):
         filenames = [os.path.join(dirpath, f) for f in filenames]
         if not all_files_old(filenames, comparison_date):
-            print "Skipping %s, not empty." % dirpath
+            print("Skipping %s, not empty." % dirpath)
             continue
 
         delete_files(filenames, force)
@@ -90,7 +90,7 @@ def clean_up_files(path, comparison_date, force=False):
         if is_empty(dirpath) and is_path_old(dirpath, comparison_date):
             delete_dir(dirpath, force)
         else:
-            print "%s is not empty or old enough." % dirpath
+            print("%s is not empty or old enough." % dirpath)
 
 
 if __name__ == '__main__':
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         """
         checks whether 'path' given is an absolute path and exists.
         """
-        print 'The file path %s does not exist.' % args.path
+        print('The file path %s does not exist.' % args.path)
         raise SystemExit()
 
     now = datetime.datetime.now()
