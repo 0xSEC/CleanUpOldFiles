@@ -3,6 +3,7 @@ import datetime
 import time
 import unittest
 import mock
+import sys
 from cleanup import (
     is_path_old,
     delete_path_check,
@@ -10,13 +11,24 @@ from cleanup import (
     delete_files,
     delete_dir,
     is_empty,
-    clean_up_files
+    clean_up_files,
+    get_input,
 )
+
 
 class FakeStatResponse(object):
     st_mtime = None
 
-class Test_is_path_old(unittest.TestCase):
+
+class BaseTest(unittest.TestCase):
+    def setUp(self):
+        if sys.version_info[0] <= 2:
+            self.input = '__builtin__.raw_input'
+        else:
+            self.input = 'builtins.input'
+
+
+class Test_is_path_old(BaseTest):
     def test_returns_false_for_relative_path(self):
         result = is_path_old('foo', None)
         self.assertEquals(False, result)
@@ -61,24 +73,24 @@ class Test_is_path_old(unittest.TestCase):
             self.assertEquals(True, result)
 
 
-class Test_delete_path_check(unittest.TestCase):
+class Test_delete_path_check(BaseTest):
     def test_returns_true_for_Y_input(self):
-        with mock.patch('__builtin__.raw_input', return_value='Y'):
+        with mock.patch(self.input, return_value='Y'):
             result = delete_path_check('foo')
             self.assertEquals(True, result)
 
     def test_not_true_for_N_input(self):
-        with mock.patch('__builtin__.raw_input', return_value='N'):
+        with mock.patch(self.input, return_value='N'):
             result = delete_path_check('foo')
             self.assertNotEqual(True, result)
 
     def test_not_true_for_no_input(self):
-        with mock.patch('__builtin__.raw_input', return_value=''):
+        with mock.patch(self.input, return_value=''):
             result = delete_path_check('foo')
             self.assertNotEqual(True, result)
 
 
-class Test_all_files_old(unittest.TestCase):
+class Test_all_files_old(BaseTest):
     def test_returns_true_when_all_files_are_old(self):
         file_list = ['foo', 'bar', 'baz', 'boz', 'bur']
         with mock.patch('cleanup.is_path_old', side_effect=[True] * 5):
@@ -99,7 +111,7 @@ class Test_all_files_old(unittest.TestCase):
             self.assertEquals(False, result)
 
 
-class Test_delete_files(unittest.TestCase):
+class Test_delete_files(BaseTest):
     def test_nothing_is_deleted_for_empty_list_of_paths(self):
         with mock.patch('cleanup.os.remove') as remove:
             delete_files([])
@@ -127,7 +139,7 @@ class Test_delete_files(unittest.TestCase):
                 self.assertEquals(3, dpc.call_count)
 
 
-class Test_delete_dir(unittest.TestCase):
+class Test_delete_dir(BaseTest):
     def test_does_not_delete_when_delete_path_check_is_not_true(self):
         with mock.patch('cleanup.os.rmdir') as rmdir:
             with mock.patch('cleanup.delete_path_check', return_value=None) as dpc:
@@ -150,7 +162,7 @@ class Test_delete_dir(unittest.TestCase):
                 self.assertEquals(1, dpc.call_count)
 
 
-class Test_is_empty(unittest.TestCase):
+class Test_is_empty(BaseTest):
     def test_return_false_for_invalid_path(self):
         result = is_empty('')
         self.assertEquals(False, result)
@@ -165,7 +177,7 @@ class Test_is_empty(unittest.TestCase):
         self.assertEquals(False, result)
 
 
-class Test_clean_up_files(unittest.TestCase):
+class Test_clean_up_files(BaseTest):
     @mock.patch('cleanup.is_path_old', return_value=True)
     @mock.patch('cleanup.is_empty', return_value=True)
     @mock.patch('cleanup.delete_dir')
@@ -207,6 +219,13 @@ class Test_clean_up_files(unittest.TestCase):
             self.assertEquals(1, df.call_count)
             self.assertEquals(1, ie.call_count)
             self.assertEquals(0, dd.call_count)
+
+
+class Test_get_input(BaseTest):
+    def test_correct_input_function_is_called(self):
+        with mock.patch(self.input) as input_:
+            get_input('')
+            self.assertEquals(1, input_.call_count)
 
 
 if __name__ == '__main__':

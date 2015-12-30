@@ -32,7 +32,7 @@ def delete_path_check(path):
     or is False.
     """
     prompt = "Do you want to delete: %s ? y/N " % path
-    list_check = str(raw_input(prompt)).upper().strip()
+    list_check = get_input(prompt).upper()
     if list_check == 'Y':
         return True
     print("%s has not been removed. "
@@ -91,6 +91,18 @@ def clean_up_files(path, comparison_date, force=False):
             delete_dir(dirpath, force)
         else:
             print("%s is not empty or old enough." % dirpath)
+
+
+def get_input(prompt):
+    """
+    Assesses python version being used and gets user input using the
+    appropriate function. 
+    """
+    if sys.version_info[0] >= 3:
+        result = input(prompt)
+    else:
+        result = raw_input(prompt)
+    return str(result).strip()
 
 
 if __name__ == '__main__':
