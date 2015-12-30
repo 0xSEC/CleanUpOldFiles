@@ -3,3 +3,9 @@
 .python-version
 Archive/
 *.pyc
+bin/
+cover/
+include/
+lib/
+man/
+pip-selfcheck.json

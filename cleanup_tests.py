@@ -26,8 +26,11 @@ class Test_is_path_old(unittest.TestCase):
         self.assertEquals(False, result)
 
     def test_raises_for_non_date(self):
-        with self.assertRaises(ValueError):
-            is_path_old(os.path.abspath(__file__), None)
+        self.assertRaises(
+            ValueError,
+            is_path_old,
+            os.path.abspath(__file__),
+            None)
 
     def test_returns_false_for_young_files(self):
         # create a fake response with a young
@@ -60,17 +63,17 @@ class Test_is_path_old(unittest.TestCase):
 
 class Test_delete_path_check(unittest.TestCase):
     def test_returns_true_for_Y_input(self):
-        with mock.patch('cleanup.raw_input', return_value='Y'):
+        with mock.patch('__builtin__.raw_input', return_value='Y'):
             result = delete_path_check('foo')
             self.assertEquals(True, result)
 
     def test_not_true_for_N_input(self):
-        with mock.patch('cleanup.raw_input', return_value='N'):
+        with mock.patch('__builtin__.raw_input', return_value='N'):
             result = delete_path_check('foo')
             self.assertNotEqual(True, result)
 
     def test_not_true_for_no_input(self):
-        with mock.patch('cleanup.raw_input', return_value=''):
+        with mock.patch('__builtin__.raw_input', return_value=''):
             result = delete_path_check('foo')
             self.assertNotEqual(True, result)
 
