@@ -6,12 +6,13 @@ This is a script which allows you to delete files and empty directories which ar
 
 To use, call the script as such:
 
-    python cleanup.py <path> [--days=<days>] [--force]
+    python cleanup.py <path> [--days=<days>] [--force] [--dryrun]
 
 ### Options
 
     -d <days>, --days <days>  the age of the files in days [default: 1]
     -f, --force               force deletion without asking [default: False]
+    -D, --dryrun              do not perform delete operations [default: False]
     -h, --help                show description and usage
 
 ## Notes
