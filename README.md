@@ -8,7 +8,7 @@ To use, call the script as such:
 
     python cleanup.py <path> [--days=<days>] [--force]
 
-## Options
+### Options
 
     -d <days>, --days <days>  the age of the files in days [default: 1]
     -f, --force               force deletion without asking [default: False]
