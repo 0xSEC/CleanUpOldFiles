@@ -13,6 +13,7 @@ from cleanup import (
     is_empty,
     clean_up_files,
     get_input,
+    as_dryrun,
 )
 
 
@@ -226,6 +227,35 @@ class Test_get_input(BaseTest):
         with mock.patch(self.input) as input_:
             get_input('')
             self.assertEquals(1, input_.call_count)
+
+
+class Test_as_dryrun(BaseTest):
+    @mock.patch('cleanup.os.rmdir')
+    @mock.patch('cleanup.os.remove')
+    def test_does_not_mock_for_false(self, remove, rmdir):
+        import cleanup
+        self.assertEqual(cleanup.os.remove, remove)
+        self.assertEqual(cleanup.os.rmdir, rmdir)
+
+        with as_dryrun(False):
+            self.assertEqual(cleanup.os.remove, remove)
+            self.assertEqual(cleanup.os.rmdir, rmdir)
+
+        self.assertEqual(cleanup.os.remove, remove)
+        self.assertEqual(cleanup.os.rmdir, rmdir)
+
+    def test_mocks_correctly_for_true(self):
+        import cleanup
+        self.assertFalse(isinstance(cleanup.os.remove, mock.MagicMock))
+        self.assertFalse(isinstance(cleanup.os.rmdir, mock.MagicMock))
+
+        with as_dryrun(True):
+            self.assertTrue(isinstance(cleanup.os.remove, mock.MagicMock))
+            self.assertTrue(isinstance(cleanup.os.rmdir, mock.MagicMock))
+
+        self.assertFalse(isinstance(cleanup.os.remove, mock.MagicMock))
+        self.assertFalse(isinstance(cleanup.os.rmdir, mock.MagicMock))
+
 
 
 if __name__ == '__main__':

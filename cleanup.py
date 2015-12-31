@@ -6,18 +6,21 @@ Description:
   removing files and empty directories older than 'N' days.
 
 Usage:
-  cleanup <path> [--days=<days>] [--force]
+  cleanup <path> [--days=<days>] [--force] [--dryrun]
   cleanup --help
 
 Options:
   -d <days>, --days <days>  the age of the files in days [default: 1]
   -f, --force               force deletion without asking [default: False]
+  -D, --dryrun              do not perform delete operations [default: False]
   -h, --help                show description and usage
 """
 
 import argparse
-import os
+import contextlib
 import datetime
+import mock
+import os
 import sys
 from docopt import docopt
 
@@ -89,26 +92,6 @@ def is_empty(dir_):
     return os.path.isdir(dir_) and not os.listdir(dir_)
 
 
-def clean_up_files(path, comparison_date, force=False):
-    """
-    Lists all the files contained within the 'path' and calls 'all_files_old'
-    against the 'comparison_date' to see whether they should be deleted when
-    'force' is True.
-    """
-    for dirpath, subdirs, filenames in os.walk(path, topdown=False):
-        filenames = [os.path.join(dirpath, f) for f in filenames]
-        if not all_files_old(filenames, comparison_date):
-            print("Skipping %s, not empty." % dirpath)
-            continue
-
-        delete_files(filenames, force)
-
-        if is_empty(dirpath) and is_path_old(dirpath, comparison_date):
-            delete_dir(dirpath, force)
-        else:
-            print("%s is not empty or old enough." % dirpath)
-
-
 def get_input(prompt):
     """
     Assesses python version being used and gets user input using the
@@ -121,8 +104,45 @@ def get_input(prompt):
     return str(result).strip()
 
 
+@contextlib.contextmanager
+def as_dryrun(dryrun=False):
+    if dryrun:
+        patched_remove = mock.patch('os.remove')
+        patched_rmdir = mock.patch('os.rmdir')
+        patched_remove.start()
+        patched_rmdir.start()
+
+    yield
+
+    if dryrun:
+        patched_remove.stop()
+        patched_rmdir.stop()
+
+
+def clean_up_files(path, comparison_date, force=False, dryrun=False):
+    """
+    Lists all the files contained within the 'path' and calls 'all_files_old'
+    against the 'comparison_date' to see whether they should be deleted when
+    'force' is True.
+    """
+    for dirpath, subdirs, filenames in os.walk(path, topdown=False):
+        filenames = [os.path.join(dirpath, f) for f in filenames]
+        if not all_files_old(filenames, comparison_date):
+            print("Skipping %s, not empty." % dirpath)
+            continue
+
+        with as_dryrun(dryrun):
+            delete_files(filenames, force)
+
+        if is_empty(dirpath) and is_path_old(dirpath, comparison_date):
+            with as_dryrun(dryrun):
+                delete_dir(dirpath, force)
+        else:
+            print("%s is not empty or old enough." % dirpath)
+
+
 if __name__ == '__main__':
-    args = docopt(__doc__, version='0.2')
+    args = docopt(__doc__, version='0.3')
 
     if not os.path.isabs(args['<path>']) or not os.path.exists(args['<path>']):
         """
@@ -135,4 +155,4 @@ if __name__ == '__main__':
     days = datetime.timedelta(days=int(args['--days']))
 
     # do the bizniz
-    clean_up_files(args['<path>'], now - days, args['--force'])
+    clean_up_files(args['<path>'], now - days, args['--force'], args['--dryrun'])
