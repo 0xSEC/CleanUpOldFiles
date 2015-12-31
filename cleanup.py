@@ -1,9 +1,25 @@
+"""
+cleanup files and empty directories which are older than N days.
+
+Description:
+  A script which, when executed, will run through a path
+  removing files and empty directories older than 'N' days.
+
+Usage:
+  cleanup <path> [--days=<days>] [--force]
+  cleanup --help
+
+Options:
+  -d <days>, --days <days>  the age of the files in days [default: 1]
+  -f, --force               force deletion without asking [default: False]
+  -h, --help                show description and usage
+"""
 
 import argparse
 import os
 import datetime
 import sys
-
+from docopt import docopt
 
 def is_path_old(path, comparison_date):
     """
@@ -96,7 +112,7 @@ def clean_up_files(path, comparison_date, force=False):
 def get_input(prompt):
     """
     Assesses python version being used and gets user input using the
-    appropriate function. 
+    appropriate function.
     """
     if sys.version_info[0] >= 3:
         result = input(prompt)
@@ -106,32 +122,17 @@ def get_input(prompt):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description=('cleans up folder of files older '
-                     'than the specified number of days'))
-    parser.add_argument('-p', '--path',
-                        type=str,
-                        required=True,
-                        help='the path to be cleaned up')
-    parser.add_argument('-d', '--days',
-                        type=int,
-                        required=True,
-                        help='the age of the files in days',)
-    parser.add_argument('-f', '--force',
-                        action='store_true',
-                        help=('check whether the selected list '
-                              'of files should be deleted'))
-    args = parser.parse_args()
+    args = docopt(__doc__, version='0.2')
 
-    if not os.path.isabs(args.path) or not os.path.exists(args.path):
+    if not os.path.isabs(args['<path>']) or not os.path.exists(args['<path>']):
         """
         checks whether 'path' given is an absolute path and exists.
         """
-        print('The file path %s does not exist.' % args.path)
+        print('The file path %s does not exist.' % args['<path>'])
         raise SystemExit()
 
     now = datetime.datetime.now()
-    days = datetime.timedelta(days=args.days)
+    days = datetime.timedelta(days=int(args['--days']))
 
     # do the bizniz
-    clean_up_files(args.path, now - days, args.force)
+    clean_up_files(args['<path>'], now - days, args['--force'])
