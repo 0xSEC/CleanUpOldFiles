@@ -96,9 +96,9 @@ def get_input(prompt):
     appropriate function.
     """
     if sys.version_info[0] >= 3:
-        raw_input = input
-
-    result = raw_input(prompt)
+        result = input(prompt)
+    else:
+        result = raw_input(prompt)
     return str(result).strip()
 
 
