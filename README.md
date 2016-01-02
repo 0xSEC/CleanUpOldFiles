@@ -1,5 +1,7 @@
 # Clean up old files
 
+[![Build Status](https://travis-ci.org/0xSEC/CleanUpOldFiles.svg?branch=master)](https://travis-ci.org/0xSEC/CleanUpOldFiles)
+
 This is a script which allows you to delete files and empty directories which are older than *N* days.
 
 ## Usage
